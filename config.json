@@ -4,7 +4,7 @@
     {
       "nome": "NFC-e SVRS - Avisos",
       "url": "https://dfe-portal.svrs.rs.gov.br/Nfce/Avisos",
-      "seletor": "article",
+      "seletor": "section article",
       "filtro_href": "",
       "verificar_ssl": true,
       "intervalo_min": 0,
@@ -15,18 +15,18 @@
     {
       "nome": "NF-e - Notas Técnicas",
       "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=04BIflQt1aY=",
-      "seletor": "a",
+      "seletor": ".indentacaoNormal a",
       "filtro_href": "exibirArquivo",
       "verificar_ssl": false,
       "intervalo_min": 0,
       "detectar_alteracoes": false,
-      "baixar_arquivos": false,
+      "baixar_arquivos": true,
       "usar_navegador": false
     },
     {
       "nome": "NFS-e - Notícias",
       "url": "https://www.gov.br/nfse/pt-br/noticias",
-      "seletor": "a",
+      "seletor": ".noticias  a",
       "filtro_href": "/nfse/pt-br/noticias/[^?#]+",
       "verificar_ssl": true,
       "intervalo_min": 0,
@@ -37,29 +37,29 @@
     {
       "nome": "Documentação técnica  - RTC",
       "url": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/rtc",
-      "seletor": "a",
+      "seletor": "table a",
       "filtro_href": "/nfse/pt-br/[^?#]+",
       "verificar_ssl": true,
       "intervalo_min": 0,
       "detectar_alteracoes": false,
-      "baixar_arquivos": false,
+      "baixar_arquivos": true,
       "usar_navegador": false
     },
     {
-      "nome": "Schemas XML",
+      "nome": "Schemas XML NF-e NFC-e",
       "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=BMPFMBoln3w=",
-      "seletor": "a",
+      "seletor": ".indentacaoNormal a",
       "filtro_href": "",
       "verificar_ssl": true,
       "intervalo_min": 0,
       "detectar_alteracoes": false,
-      "baixar_arquivos": false,
+      "baixar_arquivos": true,
       "usar_navegador": false
     },
     {
       "nome": "Tecnospeed",
       "url": "https://blog.tecnospeed.com.br/category/documentos-fiscais/",
-      "seletor": "article",
+      "seletor": ".ts-cat-grid article",
       "filtro_href": "",
       "verificar_ssl": true,
       "intervalo_min": 0,
@@ -70,7 +70,7 @@
     {
       "nome": "NF-e SVRS - Avisos",
       "url": "https://dfe-portal.svrs.rs.gov.br/Nfe/Avisos",
-      "seletor": "article",
+      "seletor": "section article",
       "filtro_href": "",
       "verificar_ssl": true,
       "intervalo_min": 0,
@@ -81,5 +81,5 @@
   ],
   "palavras_chave": [],
   "pasta_downloads": "",
-  "aviso_bandeja_mostrado": true
+  "aviso_bandeja_mostrado": false
 }
