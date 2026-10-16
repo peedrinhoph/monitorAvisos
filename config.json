@@ -1,0 +1,40 @@
+{
+  "intervalo_min": 30,
+  "sites": [
+    {
+      "nome": "NFC-e SVRS - Avisos",
+      "url": "https://dfe-portal.svrs.rs.gov.br/Nfce/Avisos",
+      "seletor": "article",
+      "filtro_href": "",
+      "verificar_ssl": true
+    },
+    {
+      "nome": "NF-e - Notas Técnicas",
+      "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=04BIflQt1aY=",
+      "seletor": "a",
+      "filtro_href": "exibirArquivo",
+      "verificar_ssl": false
+    },
+    {
+      "nome": "NFS-e - Notícias",
+      "url": "https://www.gov.br/nfse/pt-br/noticias",
+      "seletor": "a",
+      "filtro_href": "/nfse/pt-br/noticias/[^?#]+",
+      "verificar_ssl": true
+    },
+    {
+      "nome": "Documentação técnica  - RTC",
+      "url": "https://www.gov.br/nfse/pt-br/biblioteca/documentacao-tecnica/rtc",
+      "seletor": "a",
+      "filtro_href": "/nfse/pt-br/[^?#]+",
+      "verificar_ssl": true
+    },
+    {
+      "nome": "Schemas XML",
+      "url": "https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=BMPFMBoln3w=",
+      "seletor": "a",
+      "filtro_href": "",
+      "verificar_ssl": true
+    }
+  ]
+}
