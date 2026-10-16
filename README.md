@@ -1,59 +1,103 @@
 # Monitor de Avisos
 
-Programa desktop (Python + Tkinter) que monitora páginas web periodicamente e envia uma notificação do Windows sempre que aparece um item novo, como um aviso, uma nota técnica ou uma notícia.
+Programa desktop (Python + Tkinter) que monitora páginas web periodicamente e envia uma notificação do Windows sempre que aparece um item novo, como um aviso, uma nota técnica ou uma notícia. Opcionalmente, também avisa quando um item existente é alterado.
+
+## Funcionalidades
+
+**Monitoramento**
+- Verificação periódica com intervalo padrão e intervalo próprio por site.
+- Detecção de itens novos e, opcionalmente, de itens alterados (mudança de texto).
+- Download automático dos arquivos (PDF, ZIP, XSD...) dos itens novos.
+- Suporte opcional a páginas montadas por JavaScript (Playwright).
+
+**Usabilidade**
+- Ícone na bandeja do sistema: fechar a janela minimiza, e o monitoramento continua.
+- Botão **Testar** no cadastro do site, que mostra os itens encontrados antes de salvar.
+- Novidades lidas e não lidas (não lidas em negrito) e contador no título da janela.
+- Busca no histórico, filtro "só não lidas" e exportação para CSV (abre no Excel).
+
+**Inteligência**
+- Palavras-chave prioritárias: itens com esses termos ficam em vermelho, geram notificação "⚠ PRIORIDADE" e trazem a janela para frente.
+
+**Confiabilidade**
+- Retentativa automática em falhas temporárias (espera de 5s e depois 15s).
+- Alerta quando um site falha 3 vezes seguidas e outro quando ele volta a responder.
+- Log em `monitor.log` (rotativo, até 4 arquivos de 1 MB).
 
 ## Sites configurados por padrão
 
-| Nome | URL | Filtro |
+| Nome | Seletor | Filtro |
 |---|---|---|
-| NFC-e SVRS - Avisos | https://dfe-portal.svrs.rs.gov.br/Nfce/Avisos | (nenhum) |
-| NF-e - Notas Técnicas | https://www.nfe.fazenda.gov.br/portal/listaConteudo.aspx?tipoConteudo=04BIflQt1aY= | `exibirArquivo` |
-| NFS-e - Notícias | https://www.gov.br/nfse/pt-br/noticias | `/nfse/pt-br/noticias/[^?#]+` |
+| NFC-e SVRS - Avisos | `article` | (nenhum) |
+| NF-e SVRS - Avisos | `article` | (nenhum) |
+| NF-e - Notas Técnicas | `a` | `exibirArquivo` (baixa os arquivos) |
+| Schemas XML | `a` | `exibirArquivo` |
+| NFS-e - Notícias | `a` | `/nfse/pt-br/noticias/[^?#]+` |
+| Documentação técnica - RTC | `a` | `/nfse/pt-br/[^?#]+` |
+| Tecnospeed | `article` | (nenhum) |
 
-Outros sites podem ser adicionados pela própria tela do programa.
+Se já existir um `config.json`, ele é mantido. A lista acima só vale para instalações novas.
 
 ## Como funciona
 
-1. A cada intervalo (padrão de 30 minutos), o programa baixa cada página e extrai os links dela.
-2. Na **primeira verificação** de cada site, ele só cria uma *linha de base* com os itens existentes e não notifica nada.
-3. Nas verificações seguintes, todo link que ainda não existia vira uma **novidade**:
-   - aparece uma notificação do Windows (via `plyer`);
-   - a novidade entra na lista da tela, com data, site e título;
-   - um duplo clique na novidade abre o link no navegador.
-4. O histórico fica salvo, então fechar e reabrir o programa não gera avisos repetidos.
+1. A cada intervalo, o programa baixa cada página e extrai os itens definidos pelo **seletor CSS**.
+2. Na **primeira verificação** de cada site, ele só cria uma *linha de base*, sem notificar.
+3. Nas seguintes:
+   - itens que não existiam viram **Novo**;
+   - se *detectar alterações* estiver ligado, itens cujo texto mudou viram **Alterado**;
+   - se *baixar arquivos* estiver ligado, o arquivo de cada item novo é salvo em `downloads\<site>\`.
+4. Uma notificação é enviada e a novidade entra na lista.
+
+A identidade de cada item é o seu link. Para blocos sem link, é o próprio texto.
+
+## A tela
+
+**Barra superior:** intervalo padrão, *Verificar todos*, *Verificar selecionado*, *Adicionar site*, *Editar*, *Remover*, *Palavras-chave* e *Pasta de downloads*.
+
+**Sites monitorados:** nome, intervalo, status, última e próxima verificação. Erros aparecem em vermelho. Duplo clique edita o site.
+
+**Novidades:**
+- Barra com *Buscar*, *Só não lidas*, *Marcar todas como lidas*, *Exportar CSV*, *Abrir downloads* e *Limpar histórico*.
+- Duplo clique abre o link e marca como lida.
+- Botão direito oferece *Abrir link*, *Abrir arquivo baixado*, *Copiar link* e *Marcar como lida/não lida*.
+- Não lidas aparecem em **negrito** e prioritárias em **vermelho**. A coluna *Tipo* mostra `Novo` ou `Alterado`, além de `prioridade` e `arquivo` quando for o caso.
+
+**Bandeja do sistema:** fechar a janela a envia para a bandeja (perto do relógio). O menu do ícone tem *Abrir*, *Verificar agora* e *Sair*. Para encerrar de fato, use **Sair**.
+
+### Campos de um site
+
+| Campo | Descrição |
+|---|---|
+| Nome | Exibido na tela e na notificação |
+| URL | Página a monitorar |
+| Seletor CSS | `a` = cada link; `article` = cada bloco de notícia; aceita qualquer seletor CSS (ex.: `div.aviso`, `ul.lista li`) |
+| Filtro (regex no link) | Só considera itens cujo link casa com a expressão. Serve para ignorar menus e rodapé |
+| Intervalo (min) | Vazio = usa o intervalo padrão |
+| Verificar certificado SSL | Desmarque se der erro de certificado (comum nos portais com cadeia ICP-Brasil) |
+| Avisar quando um item existente for alterado | Detecta mudança no texto do item |
+| Baixar automaticamente arquivos | Baixa o arquivo do link de cada item novo. Páginas HTML são ignoradas |
+| Renderizar com navegador | Usa Chromium (Playwright) para páginas montadas por JavaScript |
+
+Ao alterar URL, seletor, filtro ou o modo navegador, a linha de base é refeita automaticamente.
+
+**Dicas de calibração**
+- Use sempre o botão **Testar** antes de salvar.
+- `nenhum item encontrado`: o seletor ou o filtro está restritivo demais, ou a página depende de JavaScript.
+- Novidades falsas a cada verificação: adicione um filtro, ou troque `a` por um seletor mais específico.
+- "Alterado" falso com frequência: a página tem datas relativas ("há 2 dias") ou contadores. Desligue a detecção de alterações nesse site.
 
 ### Arquivos
 
 | Arquivo | Descrição |
 |---|---|
 | `monitor_avisos.py` | Programa principal |
-| `requirements.txt` | Dependências (`requests`, `beautifulsoup4`, `plyer`) |
-| `config.json` | Criado automaticamente. Lista de sites e intervalo |
-| `estado.json` | Criado automaticamente. Itens já vistos e histórico de novidades |
+| `requirements.txt` | Dependências |
+| `config.json` | Sites, intervalo, palavras-chave e pasta de downloads (criado automaticamente) |
+| `estado.json` | Itens já vistos e histórico de novidades (criado automaticamente) |
+| `monitor.log` | Log de verificações e erros |
+| `downloads\` | Arquivos baixados, organizados por site (pode ser alterada na tela) |
 
-`config.json` e `estado.json` ficam na mesma pasta do programa (ou do `.exe`).
-
-## A tela
-
-- **Barra superior**: intervalo em minutos e os botões *Verificar agora*, *Adicionar site*, *Editar*, *Remover* e *Limpar histórico*.
-- **Sites monitorados**: status de cada site (`OK — N itens, X novo(s)`, `linha de base criada`, `verificando...` ou mensagem de erro) e data/hora da última verificação. Duplo clique edita o site.
-- **Novidades**: tudo o que já foi detectado, com os mais recentes no topo. Duplo clique abre o link.
-
-Fechar a janela **encerra o monitoramento**. Para continuar recebendo avisos, deixe a janela aberta ou minimizada.
-
-### Campos de um site
-
-| Campo | Descrição |
-|---|---|
-| Nome | Nome exibido na tela e na notificação |
-| URL | Página a monitorar |
-| Seletor CSS | Elementos considerados itens. `a` = todos os links |
-| Filtro (regex no link) | Só conta links que casam com a expressão. Serve para ignorar menus e rodapé |
-| Verificar certificado SSL | Desmarque se o site falhar por certificado (comum no portal NF-e, que usa cadeia ICP-Brasil) |
-
-Ao alterar URL, seletor ou filtro de um site, a linha de base é refeita automaticamente para não gerar avisos falsos.
-
-**Calibração:** se o status mostrar `nenhum item encontrado`, o filtro está restritivo demais. Se aparecerem novidades falsas (menus que mudam, links com token de sessão), adicione ou ajuste o filtro.
+O `estado.json` da versão anterior é convertido automaticamente. O histórico antigo aparece como lido.
 
 ---
 
@@ -61,98 +105,84 @@ Ao alterar URL, seletor ou filtro de um site, a linha de base é refeita automat
 
 ### 1. Instalar o Python
 
-Baixe em https://www.python.org/downloads/ e, na instalação, marque **"Add Python to PATH"**.
+Baixe em https://www.python.org/downloads/ e marque **"Add Python to PATH"**.
 
 Se aparecer o assistente do **Python install manager**:
-
-- **Caminhos longos (260 caracteres):** pode responder `N`. Não é necessário para este programa.
-- **Aliases de execução:** em *Configurações > Aplicativos > Configurações avançadas de aplicativos > Aliases de execução de aplicativo*:
-  - **ative** "Python (default)" e "Python install manager";
-  - **desative** os itens "Instalador de aplicativo" de `python.exe` / `python3.exe` (atalhos da Microsoft Store).
-- Se o assistente perguntar se deseja instalar um runtime do Python, responda `y`.
+- **Caminhos longos (260 caracteres):** pode responder `N`.
+- **Aliases de execução:** em *Configurações > Aplicativos > Configurações avançadas de aplicativos > Aliases de execução de aplicativo*, **ative** "Python (default)" e "Python install manager" e **desative** os itens "Instalador de aplicativo" de `python.exe` / `python3.exe`.
+- Se perguntar se deseja instalar um runtime do Python, responda `y`.
 
 Feche o Prompt de Comando, abra um novo e confira:
-
 ```
 python --version
 ```
 
 ### 2. Preparar a pasta
 
-Coloque `monitor_avisos.py` e `requirements.txt` em uma pasta própria, por exemplo `C:\MonitorAvisos`.
+Coloque `monitor_avisos.py` e `requirements.txt` em uma pasta própria, por exemplo `C:\MonitorAvisos`. Se estiver atualizando, basta substituir esses dois arquivos. `config.json` e `estado.json` são mantidos.
 
 ### 3. Instalar as dependências
-
 ```
 cd C:\MonitorAvisos
 python -m pip install -r requirements.txt
 ```
 
+Opcional, só se algum site usar *Renderizar com navegador*:
+```
+python -m pip install playwright
+python -m playwright install chromium
+```
+
 ### 4. Executar
-
-Com janela de console:
-
 ```
 python monitor_avisos.py
 ```
-
 Sem janela de console:
-
 ```
 pythonw monitor_avisos.py
 ```
-
-Ou renomeie o arquivo para `monitor_avisos.pyw` e abra com duplo clique.
+Ou renomeie para `monitor_avisos.pyw` e abra com duplo clique.
 
 ### 5. Iniciar junto com o Windows
 
-1. Pressione `Win + R`, digite `shell:startup` e confirme.
-2. Crie nessa pasta um atalho para `monitor_avisos.pyw` (ou para o `.exe`, se gerar um).
+`Win + R`, digite `shell:startup` e crie nessa pasta um atalho para `monitor_avisos.pyw` (ou para o `.exe`).
 
 ---
 
 ## Gerar executável (opcional)
-
-### Instalar o PyInstaller
 
 ```
 cd C:\MonitorAvisos
 python -m pip install pyinstaller
 ```
 
-### Opção A: modo pasta (recomendado, menos bloqueado por antivírus)
-
+**Opção A: modo pasta (recomendado, menos bloqueado por antivírus)**
 ```
-python -m PyInstaller --onedir --noconsole --name MonitorAvisos --hidden-import plyer.platforms.win.notification monitor_avisos.py
+python -m PyInstaller --onedir --noconsole --name MonitorAvisos --hidden-import plyer.platforms.win.notification --hidden-import pystray._win32 monitor_avisos.py
 ```
+Resultado: `dist\MonitorAvisos\MonitorAvisos.exe`. Para distribuir, compacte a pasta inteira.
 
-Resultado: pasta `dist\MonitorAvisos\` contendo o `MonitorAvisos.exe`. Para distribuir, compacte a pasta inteira.
-
-### Opção B: arquivo único
-
+**Opção B: arquivo único**
 ```
-python -m PyInstaller --onefile --noconsole --name MonitorAvisos --hidden-import plyer.platforms.win.notification monitor_avisos.py
+python -m PyInstaller --onefile --noconsole --name MonitorAvisos --hidden-import plyer.platforms.win.notification --hidden-import pystray._win32 monitor_avisos.py
 ```
-
 Resultado: `dist\MonitorAvisos.exe`.
 
-### Observações
-
-- `--hidden-import plyer.platforms.win.notification` é **obrigatório**. Sem ele o programa abre, mas as notificações não aparecem.
-- Ícone próprio: acrescente `--icon=icone.ico` ao comando.
-- As pastas `build\` e o arquivo `MonitorAvisos.spec` podem ser apagados depois.
-- Coloque o executável em uma pasta com permissão de escrita (evite `C:\Arquivos de Programas`), pois `config.json` e `estado.json` são criados ao lado dele.
-- Para levar a configuração atual, copie o `config.json` para junto do `.exe`.
+**Observações**
+- Os dois `--hidden-import` são **obrigatórios**: sem eles, as notificações e o ícone da bandeja não funcionam no `.exe`.
+- Ícone próprio: acrescente `--icon=icone.ico`.
+- `build\` e `MonitorAvisos.spec` podem ser apagados.
+- Use uma pasta com permissão de escrita (evite `C:\Arquivos de Programas`), porque `config.json`, `estado.json`, `monitor.log` e `downloads\` ficam ao lado do executável.
+- Sites com *Renderizar com navegador* são mais confiáveis rodando pelo `.pyw` do que pelo `.exe`.
 
 ### Antivírus apagando o executável
 
-Executáveis do PyInstaller, principalmente os de `--onefile`, são um **falso positivo** conhecido.
-
-1. Confira em *Segurança do Windows > Proteção contra vírus e ameaças > Histórico de proteção* se o arquivo aparece lá (ex.: `Trojan:Win32/Wacatac`).
-2. **Máquina da empresa:** solicite a liberação à TI ou à equipe de segurança. Não contorne a política.
-3. **Máquina pessoal:** use *Permitir no dispositivo* ou adicione uma exclusão para `C:\MonitorAvisos`. Você também pode enviar o arquivo à Microsoft como falso positivo (Microsoft Security Intelligence, envio de arquivos).
-4. Prefira a **Opção A (`--onedir`)**, que costuma ser bem menos bloqueada.
-5. **Alternativa sem executável:** use o `monitor_avisos.pyw` com atalho, que o antivírus não bloqueia.
+Executáveis do PyInstaller, principalmente os de `--onefile`, são um falso positivo conhecido.
+1. Confira em *Segurança do Windows > Proteção contra vírus e ameaças > Histórico de proteção*.
+2. **Máquina da empresa:** solicite a liberação à TI ou à segurança.
+3. **Máquina pessoal:** *Permitir no dispositivo* ou exclusão para `C:\MonitorAvisos`. Também é possível enviar o arquivo à Microsoft como falso positivo.
+4. Prefira `--onedir`.
+5. Alternativa: use o `monitor_avisos.pyw` com atalho, sem gerar `.exe`.
 
 ---
 
@@ -166,27 +196,35 @@ python --version
 cd C:\MonitorAvisos
 python -m pip install -r requirements.txt
 
+:: (Opcional) Navegador para páginas com JavaScript
+python -m pip install playwright
+python -m playwright install chromium
+
 :: Executar
 python monitor_avisos.py
 pythonw monitor_avisos.py
 
 :: Gerar executável (modo pasta)
 python -m pip install pyinstaller
-python -m PyInstaller --onedir --noconsole --name MonitorAvisos --hidden-import plyer.platforms.win.notification monitor_avisos.py
+python -m PyInstaller --onedir --noconsole --name MonitorAvisos --hidden-import plyer.platforms.win.notification --hidden-import pystray._win32 monitor_avisos.py
 
 :: Gerar executável (arquivo único)
-python -m PyInstaller --onefile --noconsole --name MonitorAvisos --hidden-import plyer.platforms.win.notification monitor_avisos.py
+python -m PyInstaller --onefile --noconsole --name MonitorAvisos --hidden-import plyer.platforms.win.notification --hidden-import pystray._win32 monitor_avisos.py
 ```
 
 ## Problemas comuns
 
 | Sintoma | Solução |
 |---|---|
-| `'python' não é reconhecido` | Reinstale marcando "Add Python to PATH" ou ajuste os aliases de execução |
+| `'python' não é reconhecido` | Reinstale com "Add Python to PATH" ou ajuste os aliases de execução |
 | `'pip' não é reconhecido` | Use `python -m pip ...` |
-| `No module named requests` / `bs4` / `plyer` | `python -m pip install -r requirements.txt` |
+| `No module named ...` | `python -m pip install -r requirements.txt` |
+| Não aparece ícone na bandeja | Instale `pystray` e `pillow`. No `.exe`, use `--hidden-import pystray._win32`. Ele pode estar oculto na seta "^" perto do relógio |
 | Status `ERRO: ... SSL ...` | Edite o site e desmarque *Verificar certificado SSL* |
-| Status `nenhum item encontrado` | Revise o seletor e o filtro do site |
-| Novidades falsas a cada verificação | Adicione um filtro que pegue só os links de avisos |
-| Notificação não aparece | Verifique se o `plyer` está instalado, se as notificações do Windows estão ativas e, no `.exe`, se usou o `--hidden-import` |
-| `.exe` some da pasta `dist` | Antivírus. Veja a seção "Antivírus apagando o executável" |
+| Status `ERRO (3x)` e alerta "sem resposta" | Site fora do ar ou bloqueando. Detalhes em `monitor.log` |
+| `nenhum item encontrado` | Use *Testar*. Revise o seletor e o filtro, ou ative *Renderizar com navegador* |
+| `Playwright não instalado` | Rode os comandos opcionais do Playwright |
+| Novidades ou alterações falsas | Ajuste o filtro ou o seletor, ou desligue *detectar alterações* no site |
+| Arquivo não foi baixado | O link aponta para uma página HTML, não para um arquivo. Veja `monitor.log` |
+| Notificação não aparece | Verifique se o `plyer` está instalado e se as notificações do Windows estão ativas. No `.exe`, use o `--hidden-import` |
+| `.exe` some da pasta `dist` | Antivírus. Veja a seção correspondente |
