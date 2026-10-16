@@ -80,6 +80,44 @@ A identidade de cada item é o seu link. Para blocos sem link, é o próprio tex
 
 Ao alterar URL, seletor, filtro ou o modo navegador, a linha de base é refeita automaticamente.
 
+### Seletores CSS (encadeamento e combinações)
+
+O campo *Seletor CSS* aceita qualquer seletor suportado pelo BeautifulSoup, então dá para encadear, combinar e filtrar:
+
+| Seletor | O que pega |
+|---|---|
+| `main article` | `article` em qualquer nível dentro de `main` |
+| `div.lista > ul > li` | `li` filhos diretos de `ul`, que é filho direto de `div.lista` |
+| `article h2 a` | o link dentro do título de cada artigo |
+| `#conteudo .aviso` | elementos com classe `aviso` dentro do id `conteudo` |
+| `article, div.noticia` | os dois tipos (a vírgula soma seletores) |
+| `article:not(.destaque)` | artigos, exceto os que têm a classe `destaque` |
+| `a[href*="exibirArquivo"]` | links cujo endereço contém o texto (alternativa ao campo Filtro) |
+| `a[href$=".pdf"]` | links que terminam em `.pdf` |
+| `li:-soup-contains("Nota Técnica")` | `li` que contêm esse texto (extensão do BeautifulSoup) |
+
+**Como o resultado vira item:** cada elemento encontrado é um item.
+- **Texto do item:** todo o texto do elemento. É usado nas palavras-chave e na detecção de alterações.
+- **Link do item:** o próprio elemento, se for `a`, ou o primeiro `a` dentro dele.
+
+**Escolha do nível (exemplo: Tecnospeed)**
+
+| Seletor | Vantagem | Desvantagem |
+|---|---|---|
+| `article` | Texto rico (título, resumo, data, categoria), bom para palavras-chave | Mudanças no resumo ou em contadores contam como "Alterado" |
+| `article h2 a` | Só título e link, mais estável, poucos alertas falsos | Palavras-chave só olham o título |
+
+Regra prática:
+- Para **detectar novidades com estabilidade**, mire no título com link (`article h2 a`, `article .entry-title a`).
+- Para **palavras-chave casarem também no resumo**, use o bloco (`article`) e deixe *detectar alterações* desligado.
+
+**Como descobrir o seletor:**
+1. No Chrome ou no Edge, clique com o botão direito sobre o aviso e escolha **Inspecionar**.
+2. Veja as tags e classes ao redor do elemento.
+3. Monte o seletor e confira com o botão **Testar** no cadastro do site.
+
+Mudar o seletor refaz a linha de base daquele site, então ele não dispara avisos antigos.
+
 **Dicas de calibração**
 - Use sempre o botão **Testar** antes de salvar.
 - `nenhum item encontrado`: o seletor ou o filtro está restritivo demais, ou a página depende de JavaScript.
