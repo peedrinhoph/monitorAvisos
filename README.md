@@ -1,7 +1,7 @@
 # Monitor de Avisos
 
-Programa desktop (Python + Tkinter) que monitora páginas web periodicamente e envia uma notificação do Windows sempre que aparece um item novo, como um aviso, uma nota técnica ou uma notícia. Opcionalmente, também avisa quando um item existente é alterado.
-
+Programa desktop (Python + Tkinter) que monitora páginas web periodicamente e envia uma notificação do Windows sempre que aparece um item novo.
+Desenvolvido para automatizar o acompanhamento de atualizações técnicas e avisos por parte do SEFAZ, por exemplo: Nota técnica, Avisos ou atualizações de schemas XML. Opcionalmente, também é possível configurar para avisar quando um tópico existente é alterado.
 
 **Tela Principal**
 
@@ -12,11 +12,9 @@ Programa desktop (Python + Tkinter) que monitora páginas web periodicamente e e
 
 <img width="679" height="569" alt="image" src="https://github.com/user-attachments/assets/ac29fff7-d248-4967-983d-71467c7b21db" />
 
-
 **Configuração de Palavras Chaves**
 
 <img width="504" height="362" alt="image" src="https://github.com/user-attachments/assets/c52e99e0-23d3-4446-9da3-58311a93d202" />
-
 
 ## Funcionalidades
 
