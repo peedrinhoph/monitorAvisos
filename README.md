@@ -2,9 +2,13 @@
 
 Programa desktop (Python + Tkinter) que monitora páginas web periodicamente e envia uma notificação do Windows sempre que aparece um item novo, como um aviso, uma nota técnica ou uma notícia. Opcionalmente, também avisa quando um item existente é alterado.
 
-**Telas**
+**Tela Principal**
 <img width="1918" height="823" alt="image" src="https://github.com/user-attachments/assets/44618774-66cc-429b-a5a4-b14966ce8528" />
+
+**Configuração do Site**
 <img width="679" height="569" alt="image" src="https://github.com/user-attachments/assets/ac29fff7-d248-4967-983d-71467c7b21db" />
+
+**Configuração de Palavras Chaves**
 <img width="504" height="362" alt="image" src="https://github.com/user-attachments/assets/c52e99e0-23d3-4446-9da3-58311a93d202" />
 
 ## Funcionalidades
